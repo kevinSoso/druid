@@ -100,7 +100,7 @@ public class Lexer {
     public Lexer(String input){
         this(input, null);
     }
-    
+
     public Lexer(String input, CommentHandler commentHandler){
         this(input, true);
         this.commentHandler = commentHandler;
@@ -115,11 +115,11 @@ public class Lexer {
             this.keywods = Keywords.SQLITE_KEYWORDS;
         }
     }
-    
+
     public boolean isKeepComments() {
         return keepComments;
     }
-    
+
     public void setKeepComments(boolean keepComments) {
         this.keepComments = keepComments;
     }
@@ -245,7 +245,7 @@ public class Lexer {
     protected final void scanChar() {
         ch = charAt(++pos);
     }
-    
+
     protected void unscan() {
         ch = charAt(--pos);
     }
@@ -599,12 +599,12 @@ public class Lexer {
 
         this.lines = 0;
         int startLine = line;
-        
+
         for (;;) {
             if (isWhitespace(ch)) {
                 if (ch == '\n') {
                     line++;
-                    
+
                     lines = line - startLine;
                 }
 
@@ -613,6 +613,11 @@ public class Lexer {
             }
 
             if (ch == '$' && charAt(pos + 1) == '{') {
+                scanVariable();
+                return;
+            }
+
+            if (ch == '?' && charAt(pos + 1) == '{') {
                 scanVariable();
                 return;
             }
@@ -854,7 +859,7 @@ public class Lexer {
                         token = Token.SUBGT;
                     }
                 } else {
-                    token = Token.SUB;    
+                    token = Token.SUB;
                 }
                 break;
             case '*':
@@ -880,7 +885,7 @@ public class Lexer {
                     scanChar();
                     if (ch == '/') {
                         scanChar();
-                        token = Token.BARBARSLASH; 
+                        token = Token.BARBARSLASH;
                     } else {
                         token = Token.BARBAR;
                     }
@@ -1089,7 +1094,7 @@ public class Lexer {
             stringVal = new String(buf, 0, bufPos);
         }
     }
-    
+
     protected final void scanString2() {
         {
             boolean hasSpecial = false;
@@ -1504,7 +1509,7 @@ public class Lexer {
 
         stringVal = new String(buf, 0, bufPos);
     }
-    
+
     public void scanSharp() {
         scanVariable();
     }
@@ -1527,7 +1532,7 @@ public class Lexer {
         } else if (c1 == '{') {
             pos++;
             bufPos++;
-            
+
             for (;;) {
                 ch = charAt(++pos);
 
@@ -1538,13 +1543,13 @@ public class Lexer {
                 bufPos++;
                 continue;
             }
-            
+
             if (ch != '}') {
                 throw new ParserException("syntax error. " + info());
             }
             ++pos;
             bufPos++;
-            
+
             this.ch = charAt(pos);
 
             stringVal = addSymbol();
@@ -1618,7 +1623,7 @@ public class Lexer {
 
     private void scanMultiLineComment() {
         Token lastToken = this.token;
-        
+
         scanChar();
         scanChar();
         mark = pos;
@@ -1630,7 +1635,7 @@ public class Lexer {
                 scanChar();
                 break;
             }
-            
+
 			// multiline comment结束符错误
 			if (ch == EOI) {
 				throw new ParserException("unterminated /* comment. " + info());
@@ -1645,11 +1650,11 @@ public class Lexer {
         if (keepComments) {
             addComment(stringVal);
         }
-        
+
         if (commentHandler != null && commentHandler.handle(lastToken, stringVal)) {
             return;
         }
-        
+
         if (!isAllowComment() && !isSafeComment(stringVal)) {
             throw new NotAllowCommentException();
         }
@@ -1657,7 +1662,7 @@ public class Lexer {
 
     private void scanSingleLineComment() {
         Token lastToken = this.token;
-        
+
         scanChar();
         scanChar();
         mark = pos;
@@ -1679,7 +1684,7 @@ public class Lexer {
                 scanChar();
                 break;
             }
-            
+
 			// single line comment结束符错误
 			if (ch == EOI) {
 				throw new ParserException("syntax error at end of input. " + info());
@@ -1695,11 +1700,11 @@ public class Lexer {
         if (keepComments) {
             addComment(stringVal);
         }
-        
+
         if (commentHandler != null && commentHandler.handle(lastToken, stringVal)) {
             return;
         }
-        
+
         if (!isAllowComment() && !isSafeComment(stringVal)) {
             throw new NotAllowCommentException();
         }
@@ -1969,12 +1974,12 @@ public class Lexer {
         }
         return hash_lower;
     }
-    
+
     public final List<String> readAndResetComments() {
         List<String> comments = this.comments;
-        
+
         this.comments = null;
-        
+
         return comments;
     }
 
@@ -2124,7 +2129,7 @@ public class Lexer {
     public int getCommentCount() {
         return commentCount;
     }
-    
+
     public void skipToEOF() {
         pos = text.length();
         this.token = Token.EOF;
@@ -2133,7 +2138,7 @@ public class Lexer {
     public boolean isEndOfComment() {
         return endOfComment;
     }
-    
+
     protected boolean isSafeComment(String comment) {
         if (comment == null) {
             return true;
@@ -2167,7 +2172,7 @@ public class Lexer {
         }
         comments.add(stringVal);
     }
-    
+
     public int getLine() {
         return line;
     }
